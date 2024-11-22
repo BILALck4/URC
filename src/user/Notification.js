@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Client, TokenProvider } from "@pusher/push-notifications-web";
 
 console.log("Notifications component loaded");
@@ -8,15 +8,27 @@ const beamsClient = new Client({
 });
 
 const Notifications = ({ children }) => {
+    const [permission, setPermission] = useState(""); // Suivre l'état de la permission
+
     useEffect(() => {
         const initializePushNotifications = async () => {
             const token = sessionStorage.getItem('token');
             const userExternalId = sessionStorage.getItem('externalId');
-            
+
             if (!token || !userExternalId) {
                 console.error('Token or External ID is missing!');
                 return;
             }
+
+            // Vérifier si les permissions de notifications sont accordées
+            const notificationPermission = Notification.permission;
+            if (notificationPermission !== "granted") {
+                console.warn("Notifications permission not granted:", notificationPermission);
+                setPermission(notificationPermission);
+                return; // Arrêter ici si les notifications ne sont pas autorisées
+            }
+
+            setPermission("granted");
 
             const beamsTokenProvider = new TokenProvider({
                 url: "/api/beams",
@@ -29,13 +41,13 @@ const Notifications = ({ children }) => {
                 // Vérifiez si un utilisateur est déjà configuré
                 const currentUserId = await beamsClient.getUserId().catch(() => null);
 
-                // Si l'utilisateur actuel est différent, réinitialisez Beams
+                // Réinitialiser Beams si l'utilisateur est différent
                 if (currentUserId && currentUserId !== userExternalId) {
                     console.log(`Stopping Beams for user: ${currentUserId}`);
-                    await beamsClient.stop(); // Réinitialisation du client
+                    await beamsClient.stop();
                 }
 
-                // Démarrez Beams et configurez l'utilisateur s'il n'est pas déjà configuré
+                // Configurer l'utilisateur si nécessaire
                 if (!currentUserId) {
                     console.log("Initializing Beams for user:", userExternalId);
                     await beamsClient.start();
@@ -53,8 +65,27 @@ const Notifications = ({ children }) => {
         initializePushNotifications();
     }, []); // Pas de dépendances pour éviter plusieurs initialisations
 
+    const requestNotificationPermission = async () => {
+        const permission = await Notification.requestPermission();
+        setPermission(permission);
+        if (permission === "granted") {
+            console.log("Notifications permission granted. Reinitializing...");
+            initializePushNotifications();
+        } else {
+            console.warn("Notifications permission denied or dismissed:", permission);
+        }
+    };
+
     return (
         <>
+            {permission === "default" && (
+                <button onClick={requestNotificationPermission}>
+                    Activer les notifications
+                </button>
+            )}
+            {permission === "denied" && (
+                <p>Les notifications sont désactivées. Veuillez les activer dans vos paramètres de navigateur.</p>
+            )}
             {children}
         </>
     );

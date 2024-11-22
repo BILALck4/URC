@@ -55,47 +55,59 @@ export default function MessagingPage() {
   // Send a new message
   const [sending, setSending] = useState(false);
 
-  const sendMessage = async () => {
+ const sendMessage = async () => {
     if (!newMessage.trim() || !selectedUser) {
-      console.error('Message content or recipient is missing.');
-      return;
+        console.error('Message content or recipient is missing.');
+        return;
     }
 
     setSending(true);
 
     const payload = {
-      sender_id: loggedUserId,
-      receiver_id: selectedUser.user_id,
-      receiver_type: 'user',
-      content: newMessage.trim(),
+        sender_id: loggedUserId,
+        receiver_id: selectedUser.user_id,
+        receiver_type: 'user',
+        content: newMessage.trim(),
     };
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10-second timeout
+
     try {
-      const response = await fetch('/api/envoyerMessage', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+        const response = await fetch('/api/envoyerMessage', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+            signal: controller.signal, // Pass the signal to the fetch request
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Unknown error occurred');
-      }
+        clearTimeout(timeoutId); // Clear timeout if the fetch completes
 
-      const { data } = await response.json();
-      console.log("Message sent:", data);
-      dispatch(addMessage(data)); // Vérifie que `data` contient bien le message attendu
-      setNewMessage('');  // Réinitialise le champ de message après envoi
-    } catch (err) {
-      console.error('Error sending message:', err);
-      alert('Failed to send the message. Please try again.');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'Unknown error occurred');
+        }
+
+        const { data } = await response.json();
+        console.log("Message sent:", data);
+        dispatch(addMessage(data)); // Add the message to the store
+        setNewMessage(''); // Reset input field
+          } catch (err) {
+        if (err === 'AbortError') {
+            console.error('Request timed out.');
+            alert('Request timed out. Please try again.');
+        } else {
+            console.error('Error sending message:', err);
+            alert('Failed to send the message. Please try again.');
+        }
     } finally {
-      setSending(false);
+        setSending(false);
     }
-  };
+};
+
   
   
 

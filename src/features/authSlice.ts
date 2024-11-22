@@ -1,51 +1,56 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
-  token: string | null;
-  username: string | null;
-  user_id: string | null;  // Ajout de l'ID de l'utilisateur
+  token: string;
+  username: string;
+  user_id: string;
   isAuthenticated: boolean;
   error: string | null;
 }
 
 const initialState: AuthState = {
-  token: null,
-  username: null,
-  user_id: null,  // Initialisation de l'ID
+  token: "",
+  username: "", // Default to empty string
+  user_id: "",
   isAuthenticated: false,
   error: null,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
-    loginSuccess(state, action: PayloadAction<{ token: string; username: string; user_id: string }>) {
+    loginSuccess(
+      state,
+      action: PayloadAction<{
+        token: string;
+        username: string; // Keep this as string
+        user_id: string;
+      }>
+    ) {
       state.token = action.payload.token;
-      state.username = action.payload.username;
+      state.username = action.payload.username || ""; // Default to empty string
       state.user_id = action.payload.user_id;
       state.isAuthenticated = true;
       state.error = null;
     },
-    loginFailure(state: AuthState, action: PayloadAction<{ message: string }>) {
+    loginFailure(state, action: PayloadAction<{ message: string }>) {
       state.error = action.payload.message;
       state.isAuthenticated = false;
+      state.token = "";
+      state.username = "";
+      state.user_id = "";
     },
-    logout(state: AuthState) {
-      state.token = null;
-      state.username = null;
-      state.user_id = null; // Réinitialise l'ID utilisateur
+    logout(state) {
+      state.token = "";
+      state.username = "";
+      state.user_id = "";
       state.isAuthenticated = false;
       state.error = null;
-    },
-    syncAuthState(state, action: PayloadAction<{ token: string; username: string; user_id: string }>) {
-      state.token = action.payload.token;
-      state.username = action.payload.username;
-      state.user_id = action.payload.user_id;
-      state.isAuthenticated = true;
     },
   },
 });
 
-export const { loginSuccess, loginFailure, logout, syncAuthState } = authSlice.actions;
+export const { loginSuccess, loginFailure, logout } = authSlice.actions;
+
 export default authSlice.reducer;

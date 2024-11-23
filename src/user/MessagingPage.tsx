@@ -23,12 +23,18 @@ export default function MessagingPage() {
       navigate('/messaging'); // Redirect to home if no user is selected
       return;
     }
-
+  
     const fetchMessages = async () => {
       setLoadingMessages(true);
       try {
+        // Construire les paramètres d'URL correctement
+        const params = new URLSearchParams({
+          receiver_id: String(selectedUser.user_id),
+          receiver_type: 'user',
+        });
+  console.log("jzdfkednk")
         const response = await fetch(
-          `/api/message?receiver_id=${selectedUser.user_id}&receiver_type=user`,
+          `/api/message`, // Ajouter les paramètres à l'URL
           {
             method: 'GET',
             headers: {
@@ -36,21 +42,23 @@ export default function MessagingPage() {
             },
           }
         );
-
+        console.log("pff")
         if (!response.ok) throw new Error(`Failed to fetch messages: ${response.statusText}`);
-
+        console.log("ha resp",response)
         const data = await response.json();
         console.log("Fetched messages:", data);
         dispatch(setMessages(data.messages || []));
+        
       } catch (error) {
         console.error('Error fetching messages:', error);
       } finally {
         setLoadingMessages(false);
       }
     };
-
+  
     fetchMessages();
   }, [selectedUser, token, dispatch, navigate]);
+  
 
   // Send a new message
   const [sending, setSending] = useState(false);
@@ -80,13 +88,10 @@ export default function MessagingPage() {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Unknown error occurred');
-      }
+      console.log("Message sent:", response);
+     
 
       const { data } = await response.json();
-      console.log("Message sent:", data);
       dispatch(addMessage(data)); // Vérifie que `data` contient bien le message attendu
       setNewMessage('');  // Réinitialise le champ de message après envoi
     } catch (err) {

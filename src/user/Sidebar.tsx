@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Box, Typography, Divider } from '@mui/joy';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
 import { setUsers, setRooms, setSelectedUser, setSelectedRoom } from '../features/usersSlice';
 import { User, Room } from '../model/common';
@@ -106,6 +106,7 @@ export default function Sidebar({ onUserSelect, onRoomSelect }: SidebarProps) {
         </Typography>
         {users.length > 0 ? (
           users.map((user) => (
+            
             <Box
               key={user.user_id}
               sx={{

@@ -1,9 +1,8 @@
-import { getConnecterUser, triggerNotConnected } from "../lib/session";
+import { getConnecterUser, triggerNotConnected } from "../lib/session.js";
 import { db } from '@vercel/postgres';
 
-export const config = {
-    runtime: 'edge',
-};
+import PushNotifications from "@pusher/push-notifications-server";
+
 
 export default async (request) => {
     try {
@@ -18,7 +17,7 @@ export default async (request) => {
         }
 
         // Extraire les données du corps de la requête
-        const { receiver_id, content, receiver_type } = await request.json();
+        const { receiver_id, content, receiver_type } = await request.body;
 
         console.log("Received data:", { receiver_id, content, receiver_type });
 
@@ -50,6 +49,27 @@ export default async (request) => {
             VALUES (${user.id}, ${user.username}, ${receiver_id}, ${content}, ${receiver_type})
             RETURNING *;
         `;
+
+        const beamsClient = new PushNotifications({
+            instanceId: process.env.PUSHER_INSTANCE_ID,
+            secretKey: process.env.PUSHER_SECRET_KEY,
+          });
+    
+          const publishResponse = await beamsClient.publishToUsers(
+            ["ac7a25a9-bcc5-4fba-8a3d-d42acda26949"],
+            {
+              web: {
+                notification: {
+                  title: user.username,
+                  body: content,
+                  ico: "https://www.univ-brest.fr/themes/custom/ubo_parent/favicon.ico",
+                  deep_link: `http://localhost:3000/home/inbox/${user.id}`,
+                },
+                data: {
+                },
+              },
+            }
+          );
 
         if (result.rowCount === 0) {
             console.log("Failed to save the message.");

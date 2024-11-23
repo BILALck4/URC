@@ -1,6 +1,6 @@
 import React from 'react';
 import { CssVarsProvider } from '@mui/joy/styles';
-
+import PusherClient from './user/PusherClient'
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
@@ -11,7 +11,10 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <CssVarsProvider theme={theme}>
   <React.StrictMode>
-    <App />
+    <PusherClient>
+      <App />
+    </PusherClient>
+    
   </React.StrictMode>
   </CssVarsProvider>,
 

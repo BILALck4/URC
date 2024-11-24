@@ -32,7 +32,8 @@ export interface UsersState {
     users: User[];
     rooms: Room[];
     selectedUser: User | null;
-    selectedRoom: Room | null; // Add this line
+    selectedRoom: Room | null; 
+    selectedUserRomm: boolean | null// Add this line
   }
   
 
@@ -44,7 +45,7 @@ export interface UsersState {
     receiver_id: number;
     receiver_type: string;
     content: string;
-    timestamp: string;
+    created_at: string;
   }
 
   export interface MessagesState {

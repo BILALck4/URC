@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import store from './store';
 import Notifications from './user/Notification'; // Importer Notifications
+
 // Dynamically import components
 const Login = lazy(() => import('./user/Login'));
 const SignUp = lazy(() => import('./user/SignUp'));
@@ -35,17 +36,21 @@ function App() {
           sw.onmessage = (event) => {
             console.log('Got event from SW:', event.data);
 
-            // Vous pouvez traiter le message ici. Par exemple, vous pouvez afficher un toast, une alerte ou mettre à jour l'état
-            const { title, message } = event.data;  // Assurez-vous que `event.data` contient les bonnes informations
-            alert(`New Notification: ${title} - ${message}`);
-          };
-        }
-      }, []);
+
+  window.Notification.requestPermission().then((permission) => {
+    if (permission === 'granted') {
+      console.log("Notifications autorisées");
+    } else {
+      console.log("Notifications non autorisées");
+    }
+  });
+
+
   return (
-    <Notifications> 
-        <BrowserRouter>
-          <Provider store={store}>
-             <Suspense fallback={<div>Loading...</div>}>
+    //<Notifications> {/* Notifications doit envelopper toute l'application */}
+    <BrowserRouter>
+      <Provider store={store}>
+        <Suspense fallback={<div>Loading...</div>}>
           <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
@@ -55,7 +60,8 @@ function App() {
         </Suspense>
       </Provider>
     </BrowserRouter>
-    </Notifications>
+        //</Notifications>
+
   );
 }
 

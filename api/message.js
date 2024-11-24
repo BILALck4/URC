@@ -1,4 +1,4 @@
-import { checkSession, unauthorizedResponse } from "../lib/session";
+import { checkSession, unauthorizedResponse } from "../lib/session.js";
 import { sql } from "@vercel/postgres";
 
 export const config = {
@@ -17,11 +17,12 @@ export default async function handler(request) {
         // Extraction des paramètres de l'URL
         const url = new URL(request.url);
         const receiver_id = url.searchParams.get("receiver_id");
+        const receiver_type = url.searchParams.get("receiver_type");
 
-        if (!receiver_id) {
-            console.warn("Paramètre 'receiver_id' manquant");
+        if (!receiver_id || !receiver_type) {
+            console.warn("Paramètre 'receiver_id' ou 'receiver_type' manquant");
             return new Response(
-                JSON.stringify({ error: "Receiver ID is required" }),
+                JSON.stringify({ error: "Receiver ID and Receiver Type are required" }),
                 {
                     status: 400,
                     headers: { 'content-type': 'application/json' },
@@ -30,24 +31,41 @@ export default async function handler(request) {
         }
 
         console.log(`Utilisateur connecté : ${connected.id}`);
-        console.log(`Receiver ID reçu : ${receiver_id}`);
+        console.log(`Receiver Type : ${receiver_type}, Receiver ID : ${receiver_id}`);
 
-        // Requête SQL
-        const { rowCount, rows } = await sql`
+        // Construction de la requête SQL avec logique conditionnelle
+        let query = `
             SELECT 
                 message_id, 
                 sender_id, 
+                sender_name, 
                 receiver_id, 
-                sender_name,
                 content, 
-                TO_CHAR(timestamp, 'DD/MM/YYYY HH24:MI') AS formatted_timestamp
+                TO_CHAR(created_at, 'DD/MM/YYYY HH24:MI') AS created_at
             FROM messages
-            WHERE (CAST(sender_id AS TEXT) = ${String(connected.id)} AND CAST(receiver_id AS TEXT) = ${String(receiver_id)})
-               OR (CAST(sender_id AS TEXT) = ${String(receiver_id)} AND CAST(receiver_id AS TEXT) = ${String(connected.id)})
-            ORDER BY timestamp ASC;
+            WHERE receiver_type = $1
+              AND (receiver_id = $2 OR sender_id = $2)
         `;
 
+        const params = [receiver_type, receiver_id];
 
+        // Ajouter une condition supplémentaire si le type est 'user'
+        if (receiver_type === 'user') {
+            query += `
+              AND (sender_id = $3 OR receiver_id = $3)
+            `;
+            params.push(connected.id);
+        }
+
+        query += ` ORDER BY created_at ASC`;
+
+        console.log("Requête SQL générée :", query);
+        console.log("Paramètres de la requête :", params);
+
+        // Exécution de la requête SQL
+        const { rowCount, rows } = await sql.query(query, params);
+
+        console.log(`Messages récupérés : ${rowCount}`);
 
         // Retourne les résultats au frontend
         return new Response(
@@ -70,4 +88,4 @@ export default async function handler(request) {
             }
         );
     }
-};
+}

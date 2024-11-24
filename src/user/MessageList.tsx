@@ -7,16 +7,20 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages }: MessageListProps) {
+   // Récupère l'ID de l'utilisateur connecté
   const loggedUserId = sessionStorage.getItem('user_id');
-  const messageEndRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null); // Référence pour l'auto-scroll
 
-  // Auto-scroll vers le bas
+  // Auto-scroll à la fin des messages lorsqu'ils changent
   useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+ 
   }, [messages]);
 
   return (
-    <Box sx={{ flex: 1, overflowY: 'auto', padding: 2 }}>
+    <Box sx={{ flex: 1, overflowY: 'auto', padding: 2, backgroundColor: '#f5f5f5' }}>
       {messages && messages.length > 0 ? (
         messages.map((message) => {
           const isSentByLoggedUser = String(message.sender_id) === String(loggedUserId);
@@ -26,9 +30,9 @@ export function MessageList({ messages }: MessageListProps) {
               key={message.message_id}
               sx={{
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: isSentByLoggedUser ? 'flex-end' : 'flex-start',
-                marginBottom: 2,
+                 justifyContent: isSentByLoggedUser ? 'flex-end' : 'flex-start',
+                marginBottom: 3,
+ 
               }}
             >
               {/* Affichage de l'émetteur */}
@@ -41,15 +45,56 @@ export function MessageList({ messages }: MessageListProps) {
               {/* Message */}
               <Box
                 sx={{
-                  padding: 1,
-                  borderRadius: '12px',
-                  backgroundColor: isSentByLoggedUser ? 'primary.500' : 'neutral.200',
+                  padding: 2,
+                  borderRadius: '20px',
+                  backgroundColor: isSentByLoggedUser ? '#007bff' : '#e0e0e0',
                   color: isSentByLoggedUser ? 'white' : 'black',
-                  maxWidth: '75%',
+                   maxWidth: '80%',
+ 
                   wordBreak: 'break-word',
+                  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+                  transition: 'transform 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                  },
                 }}
               >
-                <Typography>{message.content}</Typography>
+                {/* Affiche l'émetteur avec un petit avatar */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography
+                    sx={{
+                      fontSize: '0.9rem',
+                      fontWeight: 'bold',
+                      marginBottom: '0.3rem',
+                      color: isSentByLoggedUser ? 'white' : 'black',
+                    }}
+                  >
+                    {isSentByLoggedUser ? 'You' : message.sender_name}
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: isSentByLoggedUser ? 'green' : '#888',
+                    }}
+                  />
+                </Box>
+
+                {/* Contenu du message */}
+                <Typography sx={{ fontSize: '1rem' }}>{message.content}</Typography>
+
+                {/* Timestamp du message */}
+                <Typography
+                  sx={{
+                    fontSize: '0.75rem',
+                    color: isSentByLoggedUser ? '#cccccc' : '#777777',
+                    marginTop: '0.5rem',
+                    textAlign: 'right',
+                  }}
+                >
+                  {message.created_at}
+                </Typography>
               </Box>
 
               {/* Affichage de la date */}
@@ -62,13 +107,13 @@ export function MessageList({ messages }: MessageListProps) {
           );
         })
       ) : (
-        <Typography sx={{ textAlign: 'center', color: 'neutral.500' }}>
+        <Typography sx={{ textAlign: 'center', color: '#888' }}>
           No messages yet.
         </Typography>
       )}
-
-      {/* Référence pour l'auto-scroll */}
-      <div ref={messageEndRef} />
+       {/* Élément caché pour auto-scroll */}
+      <div ref={scrollRef} />
+ 
     </Box>
   );
 }

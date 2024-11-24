@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 // Importing Client and TokenProvider explicitly, as they are named exports
 import { Client, TokenProvider } from "@pusher/push-notifications-web";
 
-
 console.log("Notifications component loaded");
 
 const beamsClient = new Client({
@@ -10,7 +9,7 @@ const beamsClient = new Client({
 });
 
 const Notifications = ({ children }) => {
-        useEffect(() => {
+         useEffect(() => {
             const initializePushNotifications = async () => {
                 const token = sessionStorage.getItem('token');
             const userExternalId = sessionStorage.getItem('externalId');
@@ -21,10 +20,11 @@ const Notifications = ({ children }) => {
     }
 
 
+
             const beamsTokenProvider = new TokenProvider({
                 url: "/api/beams",
                 headers: {
-                    Authentication: "Bearer " + token,
+                     Authentication: "Bearer " + token,
                 },
             });
             try {
@@ -39,14 +39,16 @@ const Notifications = ({ children }) => {
         };
 
         initializePushNotifications();
-    }, []);
+     }, []);
+
 
     return (
         <>
             {children}
         </>
     );
-    
+     
 };
 
 export default Notifications;
+

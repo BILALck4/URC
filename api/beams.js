@@ -1,12 +1,13 @@
-import {getConnecterUser, triggerNotConnected} from "../lib/session";
+import {getConnecterUser, triggerNotConnected} from "../lib/session.js";
 
-const PushNotifications = require("@pusher/push-notifications-server");
+import PushNotifications from "@pusher/push-notifications-server";
 
 
 export default async (req, res) => {
 
     const userIDInQueryParam = req.query["user_id"];
     const user = await getConnecterUser(req);
+    console.log("check",user)
     console.log("PushToken : " + userIDInQueryParam + " -> " + JSON.stringify(user));
     if (user === undefined || user === null || userIDInQueryParam !== user.externalId) {
         console.log("Not connected");

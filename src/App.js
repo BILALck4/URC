@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect} from 'react';
 import './App.css';
 import { Provider } from 'react-redux';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
@@ -17,6 +17,24 @@ const RequireAuth = ({ isAuthenticated }) => {
 
 function App() {
   const isAuthenticated = !!sessionStorage.getItem('token'); // Check if the user is logged in
+  window.Notification.requestPermission().then((permission) => {
+    if (permission === 'granted') {
+        console.log('Notifications enabled');
+    } else {
+        console.log('Notifications denied');
+    }
+});
+
+
+
+      useEffect(() => {
+        // Assurez-vous que le service worker est disponible
+        if ('serviceWorker' in navigator) {
+          const sw = navigator.serviceWorker;
+
+          // Écouter le message envoyé depuis le service worker
+          sw.onmessage = (event) => {
+            console.log('Got event from SW:', event.data);
 
 
   window.Notification.requestPermission().then((permission) => {
@@ -43,6 +61,7 @@ function App() {
       </Provider>
     </BrowserRouter>
         //</Notifications>
+
   );
 }
 

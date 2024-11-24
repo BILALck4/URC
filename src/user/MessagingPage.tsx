@@ -54,16 +54,17 @@ export default function MessagingPage() {
     fetchMessages();
   }, [selectedUser, selectedRoom, selectedUserRomm, token, dispatch, navigate]);
 
-  const sendMessage = async () => {
+   const sendMessage = async () => {
     if (!newMessage.trim() || (!selectedUser && !selectedRoom)) {
       console.error('Message content or recipient is missing.');
       return;
+ 
     }
 
     setSending(true);
 
     const payload = {
-      sender_id: loggedUserId,
+       sender_id: loggedUserId,
       receiver_id: selectedUserRomm ? selectedUser?.user_id : selectedRoom?.room_id,
       receiver_type: selectedUserRomm ? 'user' : 'room',
       content: newMessage.trim(),
@@ -83,10 +84,12 @@ export default function MessagingPage() {
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
+ 
     } finally {
-      setSending(false);
+        setSending(false);
     }
-  };
+   };
+ 
 
   return (
     <div className="messaging-page">

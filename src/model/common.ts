@@ -20,6 +20,7 @@ export interface Room {
 
 
 export interface Session {
+    user_id: string;
     token: string;
     username?: string;
     id?: number;
@@ -37,6 +38,7 @@ export interface UsersState {
   
 
   export interface Message {
+    created_at: string | number | Date;
     message_id: number;
     sender_id: number;
     sender_name: string;

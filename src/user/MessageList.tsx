@@ -7,7 +7,7 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages }: MessageListProps) {
-  // Récupère l'ID de l'utilisateur connecté
+   // Récupère l'ID de l'utilisateur connecté
   const loggedUserId = sessionStorage.getItem('user_id');
   const scrollRef = useRef<HTMLDivElement>(null); // Référence pour l'auto-scroll
 
@@ -16,6 +16,7 @@ export function MessageList({ messages }: MessageListProps) {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+ 
   }, [messages]);
 
   return (
@@ -29,17 +30,27 @@ export function MessageList({ messages }: MessageListProps) {
               key={message.message_id}
               sx={{
                 display: 'flex',
-                justifyContent: isSentByLoggedUser ? 'flex-end' : 'flex-start',
+                 justifyContent: isSentByLoggedUser ? 'flex-end' : 'flex-start',
                 marginBottom: 3,
+ 
               }}
             >
+              {/* Affichage de l'émetteur */}
+              <Typography
+                sx={{ color: 'neutral.600', marginBottom: 0.5 }}
+              >
+                {isSentByLoggedUser ? 'You' : message.sender_name}
+              </Typography>
+
+              {/* Message */}
               <Box
                 sx={{
                   padding: 2,
                   borderRadius: '20px',
                   backgroundColor: isSentByLoggedUser ? '#007bff' : '#e0e0e0',
                   color: isSentByLoggedUser ? 'white' : 'black',
-                  maxWidth: '80%',
+                   maxWidth: '80%',
+ 
                   wordBreak: 'break-word',
                   boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
                   transition: 'transform 0.2s ease-in-out',
@@ -85,6 +96,13 @@ export function MessageList({ messages }: MessageListProps) {
                   {message.created_at}
                 </Typography>
               </Box>
+
+              {/* Affichage de la date */}
+              <Typography
+                sx={{ color: 'neutral.500', marginTop: 0.5 }}
+              >
+                {new Date(message.created_at).toLocaleString()}
+              </Typography>
             </Box>
           );
         })
@@ -93,8 +111,9 @@ export function MessageList({ messages }: MessageListProps) {
           No messages yet.
         </Typography>
       )}
-      {/* Élément caché pour auto-scroll */}
+       {/* Élément caché pour auto-scroll */}
       <div ref={scrollRef} />
+ 
     </Box>
   );
 }
